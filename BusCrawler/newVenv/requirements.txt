@@ -1,0 +1,8 @@
+pandas
+selenium
+azure-storage-blob
+Pillow
+NumPy
+dateparser
+geonamescache
+chromedriver_autoinstaller_fix
