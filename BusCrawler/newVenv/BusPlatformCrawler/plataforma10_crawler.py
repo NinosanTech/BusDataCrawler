@@ -14,6 +14,9 @@ import itertools
 import time
 from Helper.geographics import get_cities
 
+#import _pydevd_bundle.pydevd_constants
+#_pydevd_bundle.pydevd_constants.PYDEVD_WARN_EVALUATION_TIMEOUT = 30
+
 
 def select_date(driver, pick_date):
     calendar_months = driver.find_elements(By.CLASS_NAME, "CalendarMonthGrid_month__horizontal")
@@ -29,14 +32,20 @@ def select_date(driver, pick_date):
 
 def fix_date(date: str) -> str:
     return date.replace('Mar','Martes').replace('hs','')
+
+def retrieve_plataforma10_info_parallel(params: list) -> df:
+    return retrieve_plataforma10_info(params[0], params[1], params[2])
+
 def retrieve_plataforma10_info(origin_city: str, destination_city: str, date: str) -> df:
     url = "https://www.plataforma10.com.ar/"
-    print(f"Searching from {origin_city} to {destination_city} on {url}:\n")
+    print(f"Searching from {origin_city} to {destination_city} on {url}:\n", flush=True)
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument('log-level=3')
+
     #with webdriver.Chrome(options= chrome_options) as d:
-    with webdriver.Remote('http://172.17.0.2:4444', options=chrome_options) as d:
+    #with webdriver.Remote('http://10.0.0.4:4444', options=chrome_options) as d:
+    with webdriver.Remote('http://selenium:4444/wd/hub', options=chrome_options) as d:
     #with webdriver.Remote('http://localhost:4444', options=chrome_options) as d:
         d.get(url)
 
@@ -54,7 +63,7 @@ def retrieve_plataforma10_info(origin_city: str, destination_city: str, date: st
         try:
             wait.until(lambda d: origin_selection_list.get_attribute("class") != '')
         except TimeoutException: 
-            print("Origin not available!")
+            print("Origin not available!", flush=True)
             return
         origin.send_keys(Keys.TAB)
         final_origin = origin.get_attribute("value")
@@ -66,7 +75,7 @@ def retrieve_plataforma10_info(origin_city: str, destination_city: str, date: st
         try:
             wait.until(lambda d: destination_selection_list.get_attribute("class") != '')
         except TimeoutException: 
-            print("Destination not available!")
+            print("Destination not available!", flush=True)
             return
         destination.send_keys(Keys.TAB)
         final_destination = destination.get_attribute("value")
@@ -76,7 +85,7 @@ def retrieve_plataforma10_info(origin_city: str, destination_city: str, date: st
         try:
             select_date(d, dateparser.parse(date))
         except Exception:
-            print("Date is not available!")
+            print("Date is not available!", flush=True)
             return
         actions = ActionChains(d)
 
@@ -85,7 +94,7 @@ def retrieve_plataforma10_info(origin_city: str, destination_city: str, date: st
         try:
             wait.until(lambda d: d.find_element(By.CLASS_NAME, "b4eb40d73f2bd1854d3ed3c08c40fd97-scss") != '')
         except TimeoutException:
-            print("Search took too long or no options found!")
+            print("Search took too long or no options found!", flush=True)
             return None
 
         results = {"exits": [], "arrivals": [], "price": [], "currency": [], "availability": [], "transportclass": [], "origin": [], "destination": []}
@@ -99,7 +108,7 @@ def retrieve_plataforma10_info(origin_city: str, destination_city: str, date: st
                     tries = tries + 1
                     time.sleep(1)
             else:
-                print("Not possible to scroll to element!")
+                print("Not possible to scroll to element!", flush=True)
                 return None
 
             time_labels = i.find_elements(By.CLASS_NAME, '_6d00bee27a72edd32548abea2b556e38-scss')
@@ -117,8 +126,8 @@ def retrieve_plataforma10_info(origin_city: str, destination_city: str, date: st
             results["destination"].append(final_destination)
 
         result_frame = df.from_dict(results)
-        print(f"------------------\nOptions from {final_origin} to {final_destination} at {date}:\n")
-        print(result_frame)
-        print("\n------------------")
+        print(f"------------------\nOptions from {final_origin} to {final_destination} at {date}:\n", flush=True)
+        print(result_frame, flush=True)
+        print("\n------------------", flush=True)
         d.close()
         return result_frame
