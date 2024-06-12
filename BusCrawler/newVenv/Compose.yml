@@ -1,0 +1,17 @@
+version: '3'
+services:
+  selenium:
+    build:
+      context: .
+      dockerfile: Dockerfile.chrome
+    container_name: selenium_chrome
+    ports:
+      - "4444:4444"
+
+  selenium_python:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: selenium_python
+    depends_on:
+      - selenium
