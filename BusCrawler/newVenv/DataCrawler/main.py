@@ -7,7 +7,7 @@ import _pydevd_bundle.pydevd_constants
 _pydevd_bundle.pydevd_constants.PYDEVD_WARN_EVALUATION_TIMEOUT = 20
 from BusPlatformCrawler.website_crawler_abstract import Debug
 
-DEBUG = Debug.LOCAL_SELENIUM_CONTAINER
+DEBUG = Debug.NO_DEBUG
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(processName)s - %(levelname)s - %(message)s')
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     searchdate = date.strftime(date.today() + timedelta(days=1), '%d/%m/%Y')
     results = []
 
-    cities_combinations = cities_combinations[0:3]
+    #cities_combinations = cities_combinations[0:3]
     
     with multiprocessing.Pool(processes=1) as pool:
             inputs = [[c[0], c[1], searchdate] for c in cities_combinations]
