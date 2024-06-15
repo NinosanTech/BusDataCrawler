@@ -1,5 +1,3 @@
-import requests
-#from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
@@ -12,21 +10,10 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
 import dateparser
-import geonamescache
 import itertools
 import time
+from Helper.geographics import get_cities
 
-def get_cities(country_code: str) -> list:
-    gc = geonamescache.GeonamesCache()
-    cities = gc.get_cities()
-    return_cities = []
-    for key in cities:
-        cities_for_key = cities[key]
-        if cities_for_key['countrycode'] == country_code:
-            city_name = cities_for_key['name']
-            if city_name not in return_cities:
-                return_cities.append(city_name)
-    return return_cities
 
 def select_date(driver, pick_date):
     calendar_months = driver.find_elements(By.CLASS_NAME, "CalendarMonthGrid_month__horizontal")
@@ -40,11 +27,8 @@ def select_date(driver, pick_date):
                     return
     raise Exception("Date is not available")
 
-def main(origin_city: str, destination_city: str, date: str) -> df:
+def retrieve_plataforma10_info(origin_city: str, destination_city: str, date: str) -> df:
     url = "https://www.plataforma10.com.ar/"
-    #origin_city = 'Mendoza'
-    #destination_city = 'Salta'
-    #date = "18/05/2024"
 
     chrome_options = Options()
     chrome_options.add_argument("--headless")
@@ -87,9 +71,7 @@ def main(origin_city: str, destination_city: str, date: str) -> df:
     except Exception:
         print("Date is not available!")
         return
-    #d.execute_script(f"arguments[0].value='{date}'", date_selector.find_element(By.CSS_SELECTOR, "#date"))
     actions = ActionChains(d)
-    #actions.move_to_element_with_offset(destination, 0, 50).click().perform()
 
     d.find_element(By.ID, 'searchButton').click()
     wait = WebDriverWait(d, 10)
@@ -98,9 +80,6 @@ def main(origin_city: str, destination_city: str, date: str) -> df:
     except TimeoutException:
         print("Search took too long or no options found!")
         return None
-    #d.switch_to.window(d.window_handles[1])
-
-
 
     results = {"exits": [], "arrivals": [], "price": [], "currency": [], "availability": [], "class": [], "from": [], "to": []}
     for i in d.find_elements(By.CLASS_NAME, "a4cbc503346125be234f811582ce0130-scss"):
@@ -133,24 +112,5 @@ def main(origin_city: str, destination_city: str, date: str) -> df:
     print(f"------------------\nOptions from {final_origin} to {final_destination} at {date}:\n")
     print(result_frame)
     print("\n------------------")
+    d.close()
     return result_frame
-
-cities = get_cities('AR')
-cities_combinations = []
-for i in range(len(cities)):
-    for j in range(len(cities)):
-        if i != j:
-            cities_combinations.append((cities[i], cities[j]))
-date = "18/05/2024"
-results = []
-for comb in cities_combinations:
-    print(f"Searching from {comb[0]} to {comb[1]}:\n")
-    new_result = main(comb[0], comb[1], date)
-    if new_result is None or (type(new_result) is list and new_result[0] is None):
-        continue
-    if len(results) == 0:
-        results = pd.concat([new_result])
-    else:
-        results = pd.concat([results,new_result])
-
-print(results)
