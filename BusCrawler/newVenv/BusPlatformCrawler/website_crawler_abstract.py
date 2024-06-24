@@ -3,12 +3,15 @@ from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from enum import Enum
 from pandas import DataFrame as df
+from BusPlatformCrawler.proxy_extension import proxies
+from BusPlatformCrawler import credentials
 
 class Debug(Enum):
     
     NO_DEBUG = 0
     LOCAL_SELENIUM_CONTAINER = 1
     LOCAL_CHROME_INSTANCE = 2
+    AZURE_DEPLOY = 3
 
 class Crawler(ABC):
 
@@ -32,13 +35,24 @@ class Crawler(ABC):
     
     def connect_chrome(self):
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        # headless does not work with proxy!
+        #chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument('log-level=3')
-
+        chrome_options.add_argument('log-level=1')
+        chrome_options.add_argument("--window-size=1920x1080")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        
+        username = credentials.proxy_username
+        password = credentials.proxy_password
+        endpoint = '185.199.229.156'
+        port = '7492'
+        proxies_extension = proxies(username, password, endpoint, port)
+        chrome_options.add_extension(proxies_extension)
+        
         if self.debug == Debug.NO_DEBUG:
             driver = webdriver.Remote('http://selenium:4444/wd/hub', options=chrome_options)
-        elif self.debug == Debug.LOCAL_SELENIUM_CONTAINER:
+        elif self.debug == Debug.LOCAL_SELENIUM_CONTAINER or self.debug == Debug.AZURE_DEPLOY:
             driver = webdriver.Remote('http://localhost:4444', options=chrome_options)
         elif self.debug == Debug.LOCAL_CHROME_INSTANCE:
             driver = webdriver.Chrome(options= chrome_options)

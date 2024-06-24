@@ -6,8 +6,9 @@ from datetime import date, timedelta
 import _pydevd_bundle.pydevd_constants
 _pydevd_bundle.pydevd_constants.PYDEVD_WARN_EVALUATION_TIMEOUT = 20
 from BusPlatformCrawler.website_crawler_abstract import Debug
+import credentials
 
-DEBUG = Debug.NO_DEBUG
+DEBUG = Debug.AZURE_DEPLOY
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(processName)s - %(levelname)s - %(message)s')
@@ -28,7 +29,7 @@ def worker_wrapper(args):
         return [result, args]
     except Exception as e:
         print(f"Error: {e}", flush=True)
-        return None
+        return args
 
 def serialize(data: df, table_appendix: str=''):
     from sqlalchemy import create_engine
@@ -63,13 +64,14 @@ if __name__ == '__main__':
                 cities_combinations.append((cities[i], cities[j]))
     searchdate = date.strftime(date.today() + timedelta(days=1), '%d/%m/%Y')
     results = []
-
-    #cities_combinations = cities_combinations[0:3]
-    
-    with multiprocessing.Pool(processes=1) as pool:
-            inputs = [[c[0], c[1], searchdate] for c in cities_combinations]
-            cities_output_logging = []
-            for output in pool.imap_unordered(worker_wrapper, inputs):
+   
+    with multiprocessing.Pool(processes=4) as pool:
+        inputs = [[c[0], c[1], searchdate] for c in cities_combinations]
+        cities_output_logging = []
+        for output in pool.imap_unordered(worker_wrapper, inputs):
+            if len(output) < 2:
+                print(f"[{output[0][0]} to {output[0][1]}]: No output created due to error!")
+            else:
                 new_result = output[0]
                 cities_output = output[1][0:2]
                 if new_result is None or (type(new_result) is list and new_result[0] is None):
