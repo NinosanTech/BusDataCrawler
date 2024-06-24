@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, update
 import pyodbc
 from pandas import DataFrame
 import pandas as pd
@@ -20,7 +20,10 @@ class Serializer():
         self._engine = create_engine(database_url)
     
     def write(self, data: DataFrame, table_name: str):
-        data.to_sql(table_name, con=self._engine, if_exists='replace', index=False)
+        data.to_sql(table_name, con=self._engine, if_exists='replace', index=True)
 
     def read(self, query: str) -> DataFrame:
         return pd.read_sql(query, con=self._engine)
+    
+    def update(self, query: str):
+        self._engine.execute(query)
