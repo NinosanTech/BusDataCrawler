@@ -1,3 +1,3 @@
 FROM selenium/standalone-chrome:latest
-ENV SE_NODE_MAX_SESSIONS "3"
+ENV SE_NODE_MAX_SESSIONS "10"
 ENV SE_NODE_OVERRIDE_MAX_SESSIONS "true"

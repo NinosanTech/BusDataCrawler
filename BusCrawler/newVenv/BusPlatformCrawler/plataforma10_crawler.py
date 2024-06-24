@@ -41,6 +41,7 @@ def retrieve_plataforma10_info(origin_city: str, destination_city: str, date: st
     print(f"Searching from {origin_city} to {destination_city} on {url}:\n", flush=True)
     chrome_options = Options()
     chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument('log-level=3')
 
     #with webdriver.Chrome(options= chrome_options) as d:
@@ -90,7 +91,7 @@ def retrieve_plataforma10_info(origin_city: str, destination_city: str, date: st
         actions = ActionChains(d)
 
         d.find_element(By.ID, 'searchButton').click()
-        wait = WebDriverWait(d, 10)
+        wait = WebDriverWait(d, 30)
         try:
             wait.until(lambda d: d.find_element(By.CLASS_NAME, "b4eb40d73f2bd1854d3ed3c08c40fd97-scss") != '')
         except TimeoutException:

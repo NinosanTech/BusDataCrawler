@@ -8,6 +8,18 @@ WORKDIR ./deployment/
 #RUN export PATH=$PATH:c:/deployment/Chrome/Application/chrome.exe
 #RUN setx /M PATH “%PATH%;%c:/deployment/Chrome/Application/chrome.exe%”
 
+# Systempakete und ODBC-Treiber installieren
+ENV ACCEPT_EULA=Y
+RUN apt-get update && \
+    apt-get install -y curl apt-transport-https gnupg && \
+    curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+    curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+    apt-get update && \
+    apt-get install -y msodbcsql18 unixodbc-dev
+
+#COPY ./install_odbc.sh ./scripts/
+#RUN chmod +x ./scripts/install_odbc.sh
+
 COPY ./requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 

@@ -5,4 +5,6 @@ Pillow
 NumPy
 dateparser
 geonamescache
-chromedriver_autoinstaller_fix
+sqlalchemy
+pyodbc
+pydevd

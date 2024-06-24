@@ -1,10 +1,13 @@
 version: '3'
 services:
   selenium:
+    shm_size: 2gb
     build:
       context: .
       dockerfile: Dockerfile.chrome
-    container_name: selenium_chrome
+      args:
+        progress: plain
+    container_name: chrome_instance
     ports:
       - "4444:4444"
 
@@ -12,6 +15,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.python
-    container_name: selenium_python
+      args:
+        progress: plain
+    container_name: crawler
     depends_on:
       - selenium
