@@ -43,7 +43,7 @@ class plataforma10_crawler(Crawler):
         origin = self._d.find_element(By.CSS_SELECTOR, "#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(1) > div > div > input")
         origin.send_keys(self.origin_city)
         origin_selection_list = self._d.find_element(By.CSS_SELECTOR, '#react-autowhatever-1')
-        wait = WebDriverWait(self._d, 10)
+        wait = WebDriverWait(self._d, 20)
         try:
             wait.until(lambda d: origin_selection_list.get_attribute("class") != '')
         except TimeoutException: 
@@ -57,7 +57,7 @@ class plataforma10_crawler(Crawler):
         
         destination = self._d.find_element(By.CSS_SELECTOR, "#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(2) > div > div > input")
         destination.send_keys(self.destination_city)
-        wait = WebDriverWait(self._d, 10)
+        wait = WebDriverWait(self._d, 20)
         destination_selection_list = self._d.find_element(By.CSS_SELECTOR, '#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(2)').find_element(By.CSS_SELECTOR, '#react-autowhatever-1')
         try:
             wait.until(lambda d: destination_selection_list.get_attribute("class") != '')
@@ -70,7 +70,7 @@ class plataforma10_crawler(Crawler):
 
     def _select_date(self) -> int:
         
-        wait = WebDriverWait(self._d, 10)
+        wait = WebDriverWait(self._d, 20)
         date_selector = self._d.find_element(By.CSS_SELECTOR,'#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(3) > div > div > div > div > div')
         try:
             self._pick_date(dateparser.parse(self.date))
@@ -81,7 +81,7 @@ class plataforma10_crawler(Crawler):
 
     def _click_search(self) -> int:
         self._d.find_element(By.ID, 'searchButton').click()
-        wait = WebDriverWait(self._d, 30)
+        wait = WebDriverWait(self._d, 60)
         try:
             wait.until(lambda d: self._d.find_element(By.CLASS_NAME, "b4eb40d73f2bd1854d3ed3c08c40fd97-scss") != '')
         except TimeoutException:
@@ -124,6 +124,7 @@ class plataforma10_crawler(Crawler):
         
         with self.connect_chrome() as self._d:
             self._d.get(self._url)
+            print(self._d.title)
 
             self._close_pop_up()
 
