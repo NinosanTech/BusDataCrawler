@@ -32,39 +32,24 @@ def worker_wrapper(args):
         return args
 
 def serialize(data: df, table_appendix: str=''):
-    from sqlalchemy import create_engine
-    import pyodbc
-    assert isinstance(data, df), 'Serialization without data frame not possible!'
-    # Verbindung zur Azure SQL Database herstellen
-    server = 'busdata.database.windows.net'
-    database = 'BusDataBase'
-    username = credentials.sql_database_username
-    password = credentials.sql_database_password
-    driver = 'ODBC Driver 18 for SQL Server'
-    database_url = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver={driver}'
+    from DataCrawler.serializer import Serializer
 
-    engine = create_engine(database_url)
-
-    # DataFrame in die SQL-Datenbank schreiben
+    serializer = Serializer()
+    serializer.connect_database()
     table_name = date.strftime(date.today(), '%d/%m/%Y') + table_appendix
-    data.to_sql(table_name, con=engine, if_exists='replace', index=False)
-
+    serializer.write(table_name)
 
 if __name__ == '__main__':
-    from Helper.geographics import get_cities
+    from DataCrawler.location_controller import Location_Controller
     import multiprocessing
 
-    multiprocessing.set_start_method('spawn', True)
-    
-    cities = get_cities('AR')
-    cities_combinations = []
-    for i in range(len(cities)):
-        for j in range(len(cities)):
-            if i != j:
-                cities_combinations.append((cities[i], cities[j]))
+    location_controller = Location_Controller()
+    cities_combinations = location_controller.get_usable_location_combinations()
+    cities_combinations = cities_combinations.iloc[:, 0:2].values.tolist()
     searchdate = date.strftime(date.today() + timedelta(days=1), '%d/%m/%Y')
     results = []
    
+    multiprocessing.set_start_method('spawn', True)
     with multiprocessing.Pool(processes=4) as pool:
         inputs = [[c[0], c[1], searchdate] for c in cities_combinations]
         cities_output_logging = []
