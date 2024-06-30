@@ -73,7 +73,7 @@ class plataforma10_crawler(Crawler):
         wait = WebDriverWait(self._d, 20)
         date_selector = self._d.find_element(By.CSS_SELECTOR,'#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(3) > div > div > div > div > div')
         try:
-            self._pick_date(dateparser.parse(self.date))
+            self._pick_date(dateparser.parse(self.date,date_formats=["%d/%m/%Y"]))
         except Exception:
             print(f"{self._main_logging_string}Date is not available!", flush=True)
             return None
