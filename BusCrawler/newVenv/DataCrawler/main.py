@@ -59,8 +59,8 @@ if __name__ == '__main__':
             inputs = [[c[0], c[1], c[2], searchdate] for c in cities_combinations]
             cities_output_logging = []
             for output in pool.imap_unordered(worker_wrapper, inputs):
-                if len(output) < 2:
-                    print(f"[{output[0][1]} to {output[0][2]}]: No output created due to error!")
+                if type(output[1]) is not list:
+                    print(f"No output created due to error!")
                 else:
                     new_result = output[0]
                     cities_output = output[1][0:3]
@@ -73,6 +73,9 @@ if __name__ == '__main__':
                     elif type(new_result) is not df and new_result == -2:
                         location_controller.update_location_status(\
                             cities_output[0], cities_output[1], cities_output[2], True)
+                    elif type(new_result) is not df:
+                        print(f"Unexpected data type for result")
+                        print(f"Result is: {new_result}")
                     else:
                         if len(results) == 0:
                             results = pd.concat([new_result])

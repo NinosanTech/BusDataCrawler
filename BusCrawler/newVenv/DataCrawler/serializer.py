@@ -20,7 +20,7 @@ class Serializer():
         self._engine = create_engine(database_url)
     
     def write(self, data: DataFrame, table_name: str):
-        data.to_sql(table_name, con=self._engine, if_exists='replace', index=True)
+        data.to_sql(table_name, con=self._engine, if_exists='append', index=True)
 
     def read(self, query: str) -> DataFrame:
         return pd.read_sql(query, con=self._engine)

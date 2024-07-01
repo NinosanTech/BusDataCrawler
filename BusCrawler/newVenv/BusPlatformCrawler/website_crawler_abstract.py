@@ -45,8 +45,8 @@ class Crawler(ABC):
         
         username = credentials.proxy_username
         password = credentials.proxy_password
-        endpoint = '185.199.229.156'
-        port = '7492'
+        endpoint = '168.199.227.204'
+        port = '6983'
         proxies_extension = proxies(username, password, endpoint, port)
         chrome_options.add_extension(proxies_extension)
         

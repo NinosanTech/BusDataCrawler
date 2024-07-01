@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from pandas import DataFrame as df
 import pandas as pd
 from selenium.webdriver.common.action_chains import ActionChains
@@ -40,10 +41,16 @@ class plataforma10_crawler(Crawler):
     
     def _select_origin(self) -> int:
         
-        origin = self._d.find_element(By.CSS_SELECTOR, "#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(1) > div > div > input")
+        origin_field_css = "#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(1) > div > div > input"
+        wait = WebDriverWait(self._d, 20)
+        try:
+            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, origin_field_css)))
+        except TimeoutException:
+            print(f"{self._main_logging_string}Origin selection field not found!", flush=True)
+            return -2
+        origin = self._d.find_element(By.CSS_SELECTOR, origin_field_css)
         origin.send_keys(self.origin_city)
         origin_selection_list = self._d.find_element(By.CSS_SELECTOR, '#react-autowhatever-1')
-        wait = WebDriverWait(self._d, 20)
         try:
             wait.until(lambda d: origin_selection_list.get_attribute("class") != '')
         except TimeoutException: 
