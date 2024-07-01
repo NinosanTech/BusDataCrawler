@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, update, text
 import pyodbc
 from pandas import DataFrame
 import pandas as pd
-from DataCrawler import credentials
+import credentials
 
 class Serializer():
     

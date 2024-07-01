@@ -1,6 +1,6 @@
 from Helper.geographics import get_cities
 from pandas import DataFrame as df
-from DataCrawler.serializer import Serializer
+from serializer import Serializer
 from datetime import date, timedelta, datetime
 import numpy as np
 

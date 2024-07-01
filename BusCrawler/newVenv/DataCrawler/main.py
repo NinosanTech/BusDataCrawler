@@ -32,7 +32,7 @@ def worker_wrapper(args):
         return args
 
 def serialize(data: df, table_appendix: str=''):
-    from DataCrawler.serializer import Serializer
+    from serializer import Serializer
 
     if type(data) is not df:
         Warning('Given serialization object is no data frame!')
@@ -43,10 +43,10 @@ def serialize(data: df, table_appendix: str=''):
     serializer.write(data, table_name)
 
 if __name__ == '__main__':
-    from DataCrawler.location_controller import Location_Controller
+    from location_controller import Location_Controller
     import multiprocessing
 
-    number_processes = 1
+    number_processes = 4
     while True:
         location_controller = Location_Controller()
         cities_combinations = location_controller.get_next_location_combinations(number_processes, timedelta(hours=10))
