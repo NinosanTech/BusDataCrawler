@@ -4,8 +4,8 @@ from pandas import DataFrame as df
 from datetime import date, timedelta
 import _pydevd_bundle.pydevd_constants
 _pydevd_bundle.pydevd_constants.PYDEVD_WARN_EVALUATION_TIMEOUT = 20
-from crawler_worker import Worker, Worker_Type
-import credentials
+from .crawler_worker import Worker, Worker_Type
+import .credentials
 from BusPlatformCrawler.website_crawler_abstract import Debug
 
 

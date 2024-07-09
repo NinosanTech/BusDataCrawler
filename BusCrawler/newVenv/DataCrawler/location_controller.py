@@ -1,6 +1,6 @@
 from Helper.geographics import get_cities
 from pandas import DataFrame as df
-from serializer import Serializer
+from .serializer import Serializer, ExistBehavior
 from datetime import date, timedelta, datetime
 import numpy as np
 
@@ -30,7 +30,7 @@ class Location_Controller():
         combinations_dataframe.insert(3, 'Last_Checked', [oldest_date]*len(combinations_dataframe))
         table_name = 'location_combinations'
         self._connect_serializer()
-        self._serializer.write(combinations_dataframe, table_name)
+        self._serializer.write(combinations_dataframe, table_name, ExistBehavior.OVERWRITE)
 
     def get_usable_location_combinations(self) -> df:
         return self._serializer.read('SELECT * FROM [dbo].[location_combinations] where STATUS < 5.0')
@@ -41,6 +41,20 @@ class Location_Controller():
         non_fulfilling_rows = [(datetime.now() - datetime.strptime(d, self._date_string)) \
             < min_time_delta for d in data['Last_Checked']]
         return data.drop(np.where(non_fulfilling_rows)[0])
+
+    def origin_not_available(self, id: int, origin: str, destination: str, increase_status: bool, status: int=-1):
+        current_date = datetime.now().strftime(self._date_string)
+        self._serializer.update(f"UPDATE [dbo].[location_combinations] \
+            SET Last_Checked = '{current_date}', Status = {status} \
+            WHERE Origin = '{origin}' \
+            OR Destination = '{origin}'")
+
+    def destination_not_available(self, id: int, origin: str, destination: str, increase_status: bool, status: int=-1):
+        current_date = datetime.now().strftime(self._date_string)
+        self._serializer.update(f"UPDATE [dbo].[location_combinations] \
+            SET Last_Checked = '{current_date}', Status = {status} \
+            WHERE Origin = '{destination}' \
+            OR Destination = '{destination}'")
 
     def update_location_status(self, id: int, origin: str, destination: str, increase_status: bool, status: int=-1):
         current_date = datetime.now().strftime(self._date_string)

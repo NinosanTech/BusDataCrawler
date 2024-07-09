@@ -47,7 +47,7 @@ class plataforma10_crawler(Crawler):
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, origin_field_css)))
         except TimeoutException:
             print(f"{self._main_logging_string}Origin selection field not found!", flush=True)
-            return -2
+            return -1
         origin = self._d.find_element(By.CSS_SELECTOR, origin_field_css)
         origin.send_keys(self.origin_city)
         origin_selection_list = self._d.find_element(By.CSS_SELECTOR, '#react-autowhatever-1')
@@ -70,7 +70,7 @@ class plataforma10_crawler(Crawler):
             wait.until(lambda d: destination_selection_list.get_attribute("class") != '')
         except TimeoutException: 
             print(f"{self._main_logging_string}Destination not available!", flush=True)
-            return -2
+            return -3
         destination.send_keys(Keys.TAB)
         self.final_destination = destination.get_attribute("value")
         return 1
@@ -141,7 +141,7 @@ class plataforma10_crawler(Crawler):
 
             status = self._select_destination()
             return status
-            
+
     def retrieve_info(self) -> df:
         print(f"{self._main_logging_string}Searching on {self._url}:\n", flush=True)
         

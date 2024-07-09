@@ -2,7 +2,12 @@ from sqlalchemy import create_engine, update, text
 import pyodbc
 from pandas import DataFrame
 import pandas as pd
-import credentials
+from . import credentials
+from enum import Enum
+
+class ExistBehavior(Enum):
+    APPEND = "append"
+    OVERWRITE = "replace"
 
 class Serializer():
     
@@ -19,8 +24,8 @@ class Serializer():
 
         self._engine = create_engine(database_url)
     
-    def write(self, data: DataFrame, table_name: str):
-        data.to_sql(table_name, con=self._engine, if_exists='append', index=True)
+    def write(self, data: DataFrame, table_name: str, exist_behavior: ExistBehavior=ExistBehavior.APPEND):
+        data.to_sql(table_name, con=self._engine, if_exists=exist_behavior.value, index=True)
 
     def read(self, query: str) -> DataFrame:
         return pd.read_sql(query, con=self._engine)
