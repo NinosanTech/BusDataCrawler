@@ -126,6 +126,22 @@ class plataforma10_crawler(Crawler):
         results["destination"].append(self.final_destination)
         return results
 
+    def check_location_availability(self) -> int:
+        print(f"{self._main_logging_string}Searching on {self._url}:\n", flush=True)
+        
+        with self.connect_chrome() as self._d:
+            self._d.get(self._url)
+            print(self._d.title)
+
+            self._close_pop_up()
+
+            status = self._select_origin()
+            if status != 1:
+                return status
+
+            status = self._select_destination()
+            return status
+            
     def retrieve_info(self) -> df:
         print(f"{self._main_logging_string}Searching on {self._url}:\n", flush=True)
         

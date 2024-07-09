@@ -42,9 +42,14 @@ class Location_Controller():
             < min_time_delta for d in data['Last_Checked']]
         return data.drop(np.where(non_fulfilling_rows)[0])
 
-    def update_location_status(self, id: int, origin: str, destination: str, increase_status: bool):
+    def update_location_status(self, id: int, origin: str, destination: str, increase_status: bool, status: int=-1):
         current_date = datetime.now().strftime(self._date_string)
-        if increase_status:
+        if status != -1:
+            self._serializer.update(f"UPDATE [dbo].[location_combinations] \
+                SET Last_Checked = '{current_date}', Status = {status} \
+                WHERE Origin = '{origin}' \
+                AND Destination = '{destination}'")
+        elif increase_status:
             self._serializer.update(f"UPDATE [dbo].[location_combinations] \
                 SET Last_Checked = '{current_date}', Status = Status + 1 \
                 WHERE Origin = '{origin}' \
