@@ -20,3 +20,13 @@ services:
     container_name: crawler
     depends_on:
       - selenium
+      
+  selenium_python_location_update:
+    build:
+      context: .
+      dockerfile: Dockerfile.python_location_update
+      args:
+        progress: plain
+    container_name: crawler_location_update
+    depends_on:
+      - selenium

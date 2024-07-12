@@ -1,4 +1,4 @@
-from .location_controller import Location_Controller
+from location_controller import Location_Controller
 import pandas as pd
 from pandas import DataFrame as df
 

@@ -9,25 +9,35 @@ properties:
       resources:
         requests:
           cpu: 2.0
-          memoryInGB: 10
+          memoryInGB: 8
       ports:
       - port: 80
-  - name: bus-data-scraper
+  #- name: bus-data-scraper
+  #  properties:
+  #    image: ninohamburg/newvenv-selenium_python:latest
+  #    resources:
+  #      requests:
+  #        cpu: 1.0
+  #        memoryInGB: 2
+  #    ports:
+  #    - port: 8080
+  - name: location-updater
     properties:
-      image: ninohamburg/newvenv-selenium_python:latest
+      image: ninohamburg/newvenv-selenium_python_location_update:latest
       resources:
         requests:
-          cpu: 2.0
-          memoryInGB: 4
+          cpu: 1.0
+          memoryInGB: 2
       ports:
-      - port: 8080
+      - port: 8081
   osType: Linux
   ipAddress:
     type: Public
     dnsNameLabel: webscraper
     ports:
     - port: 80
-    - port: 8080
+  #  - port: 8080
+    - port: 8081
   diagnostics:
     logAnalytics:
       workspaceId: 761b95b6-9500-4332-ab26-fd8376b2d109

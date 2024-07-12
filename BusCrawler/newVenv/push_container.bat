@@ -12,6 +12,10 @@ echo Tagging python container
 docker tag newvenv-selenium_python:latest ninohamburg/newvenv-selenium_python:latest >nul
 echo Pushing python container
 docker push ninohamburg/newvenv-selenium_python:latest >nul
+echo Tagging python location update container
+docker tag newvenv-selenium_python_location_update:latest ninohamburg/newvenv-selenium_python_location_update:latest >nul
+echo Pushing python location update container
+docker push ninohamburg/newvenv-selenium_python_location_update:latest >nul
 
 REM Try block
 echo Deleting azure container

@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, update, text
 import pyodbc
 from pandas import DataFrame
 import pandas as pd
-from . import credentials
+import credentials
 from enum import Enum
 
 class ExistBehavior(Enum):
