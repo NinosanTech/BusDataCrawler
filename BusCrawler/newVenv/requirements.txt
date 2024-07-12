@@ -1,0 +1,10 @@
+pandas
+selenium
+azure-storage-blob
+Pillow
+NumPy
+dateparser
+geonamescache
+sqlalchemy
+pyodbc
+pydevd
