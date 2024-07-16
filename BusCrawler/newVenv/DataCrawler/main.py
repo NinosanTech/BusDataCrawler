@@ -4,9 +4,10 @@ from pandas import DataFrame as df
 from datetime import date, timedelta
 import _pydevd_bundle.pydevd_constants
 _pydevd_bundle.pydevd_constants.PYDEVD_WARN_EVALUATION_TIMEOUT = 20
-from .crawler_worker import Worker, Worker_Type
-import .credentials
+from crawler_worker import Worker, Worker_Type
+import credentials
 from BusPlatformCrawler.website_crawler_abstract import Debug
+
 
 
 # Setup logging
@@ -37,7 +38,7 @@ if __name__ == '__main__':
 
     number_processes = 4
     location_controller = Location_Controller()
-    worker = Worker(Debug.AZURE_DEPLOY, Worker_Type.CRAWL)
+    worker = Worker(Debug.LOCAL_CHROME_INSTANCE, Worker_Type.CRAWL)
     while True:
         cities_combinations = location_controller.get_next_location_combinations(number_processes, timedelta(hours=10))
         cities_combinations = cities_combinations.iloc[:, 0:3].values.tolist()

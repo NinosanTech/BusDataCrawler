@@ -1,4 +1,5 @@
 from BusPlatformCrawler.plataforma10_crawler import plataforma10_crawler
+from BusPlatformCrawler.busbud_crawler import BusBudCrawler
 from BusPlatformCrawler.website_crawler_abstract import Debug
 import logging
 from enum import Enum
@@ -18,7 +19,8 @@ class Worker():
         try:
             start_message = f"Worker started for {args}"
             logging.info(start_message)
-            crawler = plataforma10_crawler(*args[1:])
+            # crawler = plataforma10_crawler(*args[1:])
+            crawler = BusBudCrawler(*args[1:])
             crawler.debug = self.debug
             if self.worker_type == Worker_Type.CRAWL:
                 result = crawler.retrieve_info()
