@@ -16,6 +16,8 @@ from BusPlatformCrawler.website_crawler_abstract import Crawler
 
 class plataforma10_crawler(Crawler):
 
+    NO_OPTIONS_CSS = "#root > div._1a87f7c14516a317eba6506a280b3a64-scss > div > div.bf8b6efd3c21a9fbf1f0d923e85f1adb-scss > div._10bdd5cf04aea1ec8560c0d855f7ede8-scss.b9f1b4b29f5f7a8a7213d59c69b7fa5d-scss > div"
+
     def __init__(self, origin_city: str, destination_city: str, date: str):
         super().__init__("https://www.plataforma10.com.ar/", origin_city, destination_city, date)
 
@@ -90,11 +92,17 @@ class plataforma10_crawler(Crawler):
         self._d.find_element(By.ID, 'searchButton').click()
         wait = WebDriverWait(self._d, 60)
         try:
-            wait.until(lambda d: self._d.find_element(By.CLASS_NAME, "b4eb40d73f2bd1854d3ed3c08c40fd97-scss") != '')
+            wait.until(EC.any_of(EC.presence_of_element_located((By.CLASS_NAME, "b4eb40d73f2bd1854d3ed3c08c40fd97-scss")),\
+                EC.presence_of_element_located((By.CSS_SELECTOR, self.NO_OPTIONS_CSS))\
+                ))
         except TimeoutException:
-            print(f"{self._main_logging_string}Search took too long or no options found!", flush=True)
+            print(f"{self._main_logging_string}Search took too long!", flush=True)
             return -1
-        return 1
+        try:
+            no_options_text = self._d.find_element(By.CSS_SELECTOR, self.NO_OPTIONS_CSS).text
+        except NoSuchElementException:
+            return 1
+        return -1
     
     def _scroll_to_element(self, actions: ActionChains, element) -> int:
         tries = 0
