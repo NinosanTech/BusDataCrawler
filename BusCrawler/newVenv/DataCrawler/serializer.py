@@ -16,7 +16,7 @@ class Serializer():
 
     def connect_database(self):
         server = 'busdata.database.windows.net'
-        database = 'BusDataBase'
+        database = 'BusDataBase_v2'
         username = credentials.sql_database_username
         password = credentials.sql_database_password
         driver = 'ODBC Driver 18 for SQL Server'

@@ -31,7 +31,7 @@ class Crawler(ABC):
         pass
 
     def _build_result_dict(self) -> dict:
-        return {"exits": [], "arrivals": [], "price": [], "currency": [], "availability": [], "transportclass": [], "origin": [], "destination": []}
+        return {"company": [], "exits": [], "arrivals": [], "price": [], "currency": [], "availability": [], "transportclass": [], "origin": [], "destination": []}
     
     def connect_chrome(self):
         chrome_options = Options()

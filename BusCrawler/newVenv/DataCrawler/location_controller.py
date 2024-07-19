@@ -33,11 +33,11 @@ class Location_Controller():
         self._serializer.write(combinations_dataframe, table_name, ExistBehavior.OVERWRITE)
 
     def get_usable_location_combinations(self) -> df:
-        return self._serializer.read('SELECT * FROM [dbo].[location_combinations] where STATUS < 5.0')
+        return self._serializer.read('SELECT * FROM [dbo].[location_combinations] where STATUS < 7.0')
     
     def get_next_location_combinations(self, amount: int = 1, min_time_delta: timedelta = timedelta(0)) -> df:
         data = self._serializer.read(f'SELECT TOP {amount} * FROM [dbo].[location_combinations] \
-            where Status < 5 ORDER BY Last_Checked ASC')
+            where Status < 7 ORDER BY Last_Checked ASC')
         non_fulfilling_rows = [(datetime.now() - datetime.strptime(d, self._date_string)) \
             < min_time_delta for d in data['Last_Checked']]
         return data.drop(np.where(non_fulfilling_rows)[0])
@@ -56,7 +56,7 @@ class Location_Controller():
             WHERE Origin = '{destination}' \
             OR Destination = '{destination}'")
 
-    def update_location_status(self, id: int, origin: str, destination: str, increase_status: bool, status: int=-1):
+    def update_location_status(self, id: int, origin: str, destination: str, increase_status: bool, status: int=-1, increase_status_value: int=0):
         current_date = datetime.now().strftime(self._date_string)
         if status != -1:
             self._serializer.update(f"UPDATE [dbo].[location_combinations] \
@@ -66,6 +66,11 @@ class Location_Controller():
         elif increase_status:
             self._serializer.update(f"UPDATE [dbo].[location_combinations] \
                 SET Last_Checked = '{current_date}', Status = Status + 1 \
+                WHERE Origin = '{origin}' \
+                AND Destination = '{destination}'")
+        elif increase_status_value > 0:
+            self._serializer.update(f"UPDATE [dbo].[location_combinations] \
+                SET Last_Checked = '{current_date}', Status = Status + {increase_status_value} \
                 WHERE Origin = '{origin}' \
                 AND Destination = '{destination}'")
         else:

@@ -17,6 +17,7 @@ from BusPlatformCrawler.website_crawler_abstract import Crawler
 class plataforma10_crawler(Crawler):
 
     NO_OPTIONS_CSS = "#root > div._1a87f7c14516a317eba6506a280b3a64-scss > div > div.bf8b6efd3c21a9fbf1f0d923e85f1adb-scss > div._10bdd5cf04aea1ec8560c0d855f7ede8-scss.b9f1b4b29f5f7a8a7213d59c69b7fa5d-scss > div"
+    DAY_SELECTION_IDENTIFICATION = "4px solid rgb(255, 119, 49)"
 
     def __init__(self, origin_city: str, destination_city: str, date: str):
         super().__init__("https://www.plataforma10.com.ar/", origin_city, destination_city, date)
@@ -88,9 +89,7 @@ class plataforma10_crawler(Crawler):
             return None
         return 1
 
-    def _click_search(self) -> int:
-        self._d.find_element(By.ID, 'searchButton').click()
-        wait = WebDriverWait(self._d, 60)
+    def _wait_for_results(self, wait: WebDriverWait) -> int:
         try:
             wait.until(EC.any_of(EC.presence_of_element_located((By.CLASS_NAME, "b4eb40d73f2bd1854d3ed3c08c40fd97-scss")),\
                 EC.presence_of_element_located((By.CSS_SELECTOR, self.NO_OPTIONS_CSS))\
@@ -103,6 +102,11 @@ class plataforma10_crawler(Crawler):
         except NoSuchElementException:
             return 1
         return -1
+
+    def _click_search(self) -> int:
+        self._d.find_element(By.ID, 'searchButton').click()
+        wait = WebDriverWait(self._d, 60)
+        return self._wait_for_results(wait)
     
     def _scroll_to_element(self, actions: ActionChains, element) -> int:
         tries = 0
@@ -118,6 +122,15 @@ class plataforma10_crawler(Crawler):
             return None
         return 1
     
+    def _select_next_day(self) -> int:
+        day_selectors = self._d.find_elements(By.CLASS_NAME, '_51d6257eac65f5aa398320bb332dda73-scss')
+        for i,selector in enumerate(day_selectors):
+            if selector.value_of_css_property('border-top') == self.DAY_SELECTION_IDENTIFICATION:
+                day_selectors[i+1].click()
+                break
+        wait = WebDriverWait(self._d, 60)
+        return self._wait_for_results(wait)
+
     def _extract_information(self, element, results: dict) -> dict:
         
         time_labels = element.find_elements(By.CLASS_NAME, '_6d00bee27a72edd32548abea2b556e38-scss')
@@ -128,6 +141,7 @@ class plataforma10_crawler(Crawler):
         results["price"].append(price_currency[1])
         results["currency"].append(price_currency[0])
         results["availability"].append(element.find_element(By.CLASS_NAME, "b2c2207b019425d6282877959e004f79-scss").text)
+        results["company"].append(element.find_element(By.CLASS_NAME, "ae8e1d7b5355aad50165a933651976a6-scss").text)
         class_item = element.find_element(By.CLASS_NAME, "e209d44dc2f5e07f732ac5c780d0e322-scss").find_element(By.CLASS_NAME, "_0ce5bb5f30124c5cf7c74bce3784472e-scss")
         results["transportclass"].append(class_item.text)
         results["origin"].append(self.final_origin)
@@ -171,24 +185,30 @@ class plataforma10_crawler(Crawler):
             if status != 1:
                 return status
 
+            no_result_ctr = 0
             status = self._click_search()
-            if status != 1:
-                return status
+            if status == -1:
+                no_result_ctr = no_result_ctr + 1
 
             actions = ActionChains(self._d)
             results = self._build_result_dict()
-            for i in self._d.find_elements(By.CLASS_NAME, "a4cbc503346125be234f811582ce0130-scss"):
-                
-                status = self._scroll_to_element(actions, i)
+            for i_day_advance in range(0,4):
+                for i in self._d.find_elements(By.CLASS_NAME, "a4cbc503346125be234f811582ce0130-scss"):
+                    
+                    status = self._scroll_to_element(actions, i)
+                    if status != 1:
+                        return status
+                    try:
+                        results = self._extract_information(i, results)
+                    except Exception as e:
+                        print(f"{self._main_logging_string}Information extraction failed!", flush=True)
+                        return 1
+                status = self._select_next_day()
                 if status != 1:
-                    return status
-                try:
-                    results = self._extract_information(i, results)
-                except Exception as e:
-                    print(f"{self._main_logging_string}Information extraction failed!", flush=True)
-                    return -1
-                
-            self.result_frame = df.from_dict(results)
+                    no_result_ctr = no_result_ctr + 1
             self._d.close()
+            if len(results['exits']) == 0:
+                return no_result_ctr
+            self.result_frame = df.from_dict(results)
             self.print_result()
             return self.result_frame
