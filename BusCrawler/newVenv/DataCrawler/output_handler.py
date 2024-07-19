@@ -19,6 +19,9 @@ def handle_output(output: list) -> df:
         elif type(new_result) is not df and (new_result == -2 or new_result == -3):
             location_controller.update_location_status(\
                 cities_output[0], cities_output[1], cities_output[2], True)
+        elif type(new_result) is not df and new_result > 1:
+            location_controller.update_location_status(\
+                cities_output[0], cities_output[1], cities_output[2], False, -1, new_result)
         elif type(new_result) is not df:
             print(f"Unexpected data type for result")
             print(f"Result is: {new_result}")
