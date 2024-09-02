@@ -12,27 +12,16 @@ from selenium.common.exceptions import TimeoutException, StaleElementReferenceEx
 import dateparser
 import time
 from BusPlatformCrawler.website_crawler_abstract import Crawler
+from BusPlatformCrawler.date_picker import DatePicker, Type
 
 
 class plataforma10_crawler(Crawler):
 
-    NO_OPTIONS_CSS = "#root > div._1a87f7c14516a317eba6506a280b3a64-scss > div > div.bf8b6efd3c21a9fbf1f0d923e85f1adb-scss > div._10bdd5cf04aea1ec8560c0d855f7ede8-scss.b9f1b4b29f5f7a8a7213d59c69b7fa5d-scss > div"
+    NO_OPTIONS_CSS = "body > main > div > section.SimpleMainSearch_results-data-container__zna0O > section > div.SimpleMainSearch_empty-services-container__lAxqL > div > div > h2"
     DAY_SELECTION_IDENTIFICATION = "4px solid rgb(255, 119, 49)"
 
     def __init__(self, origin_city: str, destination_city: str, date: str):
         super().__init__("https://www.plataforma10.com.ar/", origin_city, destination_city, date)
-
-    def _pick_date(self, pick_date):
-        calendar_months = self._d.find_elements(By.CLASS_NAME, "CalendarMonthGrid_month__horizontal")
-        for month in calendar_months:
-            for day in month.find_elements(By.CLASS_NAME, "CalendarDay"):
-                if day.get_attribute("aria-disabled") == "false":
-                    date = day.get_attribute("aria-label")
-                    date_number = dateparser.parse(date)
-                    if date_number == pick_date:
-                        day.click()
-                        return
-        raise Exception("Date is not available")
 
     def _close_pop_up(self):
         try:
@@ -42,9 +31,8 @@ class plataforma10_crawler(Crawler):
         except NoSuchElementException:
             pass
     
-    def _select_origin(self) -> int:
-        
-        origin_field_css = "#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(1) > div > div > input"
+    def _select_origin(self) -> int:        
+        origin_field_css = "#origin-input"
         wait = WebDriverWait(self._d, 20)
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, origin_field_css)))
@@ -53,45 +41,36 @@ class plataforma10_crawler(Crawler):
             return -1
         origin = self._d.find_element(By.CSS_SELECTOR, origin_field_css)
         origin.send_keys(self.origin_city)
-        origin_selection_list = self._d.find_element(By.CSS_SELECTOR, '#react-autowhatever-1')
         try:
-            wait.until(lambda d: origin_selection_list.get_attribute("class") != '')
+            wait.until(lambda d: origin.get_attribute("aria-controls") != None)
         except TimeoutException: 
             print(f"{self._main_logging_string}Origin not available!", flush=True)
             return -2
-        origin.send_keys(Keys.TAB)
+        origin.send_keys(Keys.ARROW_DOWN)
+        origin.send_keys(Keys.ENTER)
         self.final_origin = origin.get_attribute("value")
         return 1
 
     def _select_destination(self) -> int:
-        
-        destination = self._d.find_element(By.CSS_SELECTOR, "#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(2) > div > div > input")
+        destination_field_css = "#destination-input"
+        destination = self._d.find_element(By.CSS_SELECTOR, destination_field_css)
         destination.send_keys(self.destination_city)
         wait = WebDriverWait(self._d, 20)
-        destination_selection_list = self._d.find_element(By.CSS_SELECTOR, '#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(2)').find_element(By.CSS_SELECTOR, '#react-autowhatever-1')
         try:
-            wait.until(lambda d: destination_selection_list.get_attribute("class") != '')
+            wait.until(lambda d: destination.get_attribute("aria-controls") != None)
         except TimeoutException: 
             print(f"{self._main_logging_string}Destination not available!", flush=True)
             return -3
-        destination.send_keys(Keys.TAB)
+        destination.send_keys(Keys.ARROW_DOWN)
+        destination.send_keys(Keys.ENTER)
         self.final_destination = destination.get_attribute("value")
-        return 1
-
-    def _select_date(self) -> int:
-        
-        wait = WebDriverWait(self._d, 20)
-        date_selector = self._d.find_element(By.CSS_SELECTOR,'#form > div.b5aeccc22403454d888b73014424ee13-scss > div:nth-child(3) > div > div > div > div > div')
-        try:
-            self._pick_date(dateparser.parse(self.date,date_formats=["%d/%m/%Y"]))
-        except Exception:
-            print(f"{self._main_logging_string}Date is not available!", flush=True)
-            return None
         return 1
 
     def _wait_for_results(self, wait: WebDriverWait) -> int:
         try:
-            wait.until(EC.any_of(EC.presence_of_element_located((By.CLASS_NAME, "b4eb40d73f2bd1854d3ed3c08c40fd97-scss")),\
+            wait.until(EC.any_of(\
+                EC.all_of(EC.invisibility_of_element((By.CLASS_NAME, "PageLoading_container__oGMv1")),\
+                    EC.presence_of_element_located((By.CLASS_NAME, "SimpleMainSearch_search-result-list__CKKcn"))),\
                 EC.presence_of_element_located((By.CSS_SELECTOR, self.NO_OPTIONS_CSS))\
                 ))
         except TimeoutException:
@@ -104,13 +83,14 @@ class plataforma10_crawler(Crawler):
         return -1
 
     def _click_search(self) -> int:
-        self._d.find_element(By.ID, 'searchButton').click()
+        self._d.find_element(By.CSS_SELECTOR, 'body > main > div > section.home_search-and-slider-container__he1xt > section.home_search-container__msbdB > div > div > div.SearchBox_search-box-item__EwzeE.SearchBox_search-button__To5kM > button') \
+            .click()
         wait = WebDriverWait(self._d, 60)
         return self._wait_for_results(wait)
     
     def _scroll_to_element(self, actions: ActionChains, element) -> int:
         tries = 0
-        while tries < 5:
+        while tries < 10:
             try:
                 actions.scroll_to_element(element).perform()
                 break
@@ -123,26 +103,26 @@ class plataforma10_crawler(Crawler):
         return 1
     
     def _select_next_day(self) -> int:
-        day_selectors = self._d.find_elements(By.CLASS_NAME, '_51d6257eac65f5aa398320bb332dda73-scss')
+        day_buttons = self._d.find_element(By.CLASS_NAME,"OtherDates_other-dates__HxaTs")
+        day_selectors = day_buttons.find_elements(By.CLASS_NAME, "Button_alternative__EqR30")
         for i,selector in enumerate(day_selectors):
-            if selector.value_of_css_property('border-top') == self.DAY_SELECTION_IDENTIFICATION:
+            if selector.get_attribute("class").find("Button_primary__DEC_1") != -1:
                 day_selectors[i+1].click()
                 break
+        time.sleep(1)
         wait = WebDriverWait(self._d, 60)
         return self._wait_for_results(wait)
 
     def _extract_information(self, element, results: dict) -> dict:
         
-        time_labels = element.find_elements(By.CLASS_NAME, '_6d00bee27a72edd32548abea2b556e38-scss')
-        assert(len(time_labels) == 3)
-        results["exits"].append(dateparser.parse(self._fix_date(time_labels[0].text)))
-        results["arrivals"].append(dateparser.parse(self._fix_date(time_labels[1].text)))
-        price_currency = element.find_element(By.CLASS_NAME, "d98c63988e78241604a17e69b6968da5-scss").text.split(" ")
+        results["exits"].append(dateparser.parse(self._fix_date(element.find_element(By.CLASS_NAME, "searchResultCard_departure-date__MLSWd").text)))
+        results["arrivals"].append(dateparser.parse(self._fix_date(element.find_element(By.CLASS_NAME, "searchResultCard_arrival-date__eVVbj").text)))
+        price_currency = element.find_element(By.CLASS_NAME, "searchResultCard_card__price-and-currency__nyZXT").text.split("\n")
         results["price"].append(price_currency[1])
         results["currency"].append(price_currency[0])
-        results["availability"].append(element.find_element(By.CLASS_NAME, "b2c2207b019425d6282877959e004f79-scss").text)
-        results["company"].append(element.find_element(By.CLASS_NAME, "ae8e1d7b5355aad50165a933651976a6-scss").text)
-        class_item = element.find_element(By.CLASS_NAME, "e209d44dc2f5e07f732ac5c780d0e322-scss").find_element(By.CLASS_NAME, "_0ce5bb5f30124c5cf7c74bce3784472e-scss")
+        results["availability"].append(element.find_elements(By.CLASS_NAME, "searchResultCard_card__info-text__6FKWE")[1].text.replace("Pasajes ", ""))
+        results["company"].append(element.find_element(By.CLASS_NAME, "searchResultCard_card__company__zrAtx").text)
+        class_item = element.find_element(By.CLASS_NAME, "searchResultCard_card__quality-text__O2xs0")
         results["transportclass"].append(class_item.text)
         results["origin"].append(self.final_origin)
         results["destination"].append(self.final_destination)
@@ -181,7 +161,10 @@ class plataforma10_crawler(Crawler):
             if status != 1:
                 return status
 
-            status = self._select_date()
+            date_picker = DatePicker(self._d, Type.PLATAFORMA_10_NEW, \
+                dateparser.parse(self.date, date_formats=["%d/%m/%Y"]), \
+                    self._main_logging_string)
+            status = date_picker.pick_date()
             if status != 1:
                 return status
 
@@ -193,7 +176,7 @@ class plataforma10_crawler(Crawler):
             actions = ActionChains(self._d)
             results = self._build_result_dict()
             for i_day_advance in range(0,4):
-                for i in self._d.find_elements(By.CLASS_NAME, "a4cbc503346125be234f811582ce0130-scss"):
+                for i in self._d.find_elements(By.CLASS_NAME, "searchResultCard_card__5Avpr"):
                     
                     status = self._scroll_to_element(actions, i)
                     if status != 1:

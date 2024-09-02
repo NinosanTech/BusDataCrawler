@@ -41,7 +41,7 @@ if __name__ == '__main__':
     location_controller = Location_Controller()
     worker = Worker(Debug.AZURE_DEPLOY, Worker_Type.CRAWL)
     while True:
-        cities_combinations = location_controller.get_next_location_combinations(number_processes, timedelta(hours=10))
+        cities_combinations = location_controller.get_next_location_combinations(number_processes*5, timedelta(hours=10))
         cities_combinations = cities_combinations.iloc[:, 0:3].values.tolist()
         searchdate = date.strftime(date.today() + timedelta(days=1), '%d/%m/%Y')
         results = df()

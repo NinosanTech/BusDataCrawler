@@ -36,11 +36,19 @@ class Location_Controller():
         return self._serializer.read('SELECT * FROM [dbo].[location_combinations] where STATUS < 7.0')
     
     def get_next_location_combinations(self, amount: int = 1, min_time_delta: timedelta = timedelta(0)) -> df:
-        data = self._serializer.read(f'SELECT TOP {amount} * FROM [dbo].[location_combinations] \
-            where Status < 7 ORDER BY Last_Checked ASC')
+        last_time_ok = datetime.strftime(datetime.now() - timedelta(hours=1), self._date_string)
+        data = self._serializer.read(f"SELECT TOP {amount} * FROM [dbo].[location_combinations] \
+            where Status < 10 and (Blocked IS NULL or Blocked < '{last_time_ok}') ORDER BY Last_Checked ASC")
         non_fulfilling_rows = [(datetime.now() - datetime.strptime(d, self._date_string)) \
             < min_time_delta for d in data['Last_Checked']]
-        return data.drop(np.where(non_fulfilling_rows)[0])
+        data.drop(np.where(non_fulfilling_rows)[0])
+        current_time = datetime.strftime(datetime.now(), self._date_string)
+        [self._serializer.update(f"UPDATE [dbo].[location_combinations] \
+            SET Blocked = '{current_time}' \
+            WHERE Origin = '{o}' \
+            AND Destination = '{d}'") \
+            for o,d in zip(data['Origin'], data['Destination'])]
+        return data
 
     def origin_not_available(self, id: int, origin: str, destination: str, increase_status: bool, status: int=-1):
         current_date = datetime.now().strftime(self._date_string)
@@ -60,21 +68,21 @@ class Location_Controller():
         current_date = datetime.now().strftime(self._date_string)
         if status != -1:
             self._serializer.update(f"UPDATE [dbo].[location_combinations] \
-                SET Last_Checked = '{current_date}', Status = {status} \
+                SET Last_Checked = '{current_date}', Status = {status}, Blocked = null \
                 WHERE Origin = '{origin}' \
                 AND Destination = '{destination}'")
         elif increase_status:
             self._serializer.update(f"UPDATE [dbo].[location_combinations] \
-                SET Last_Checked = '{current_date}', Status = Status + 1 \
+                SET Last_Checked = '{current_date}', Status = Status + 1, Blocked = null \
                 WHERE Origin = '{origin}' \
                 AND Destination = '{destination}'")
         elif increase_status_value > 0:
             self._serializer.update(f"UPDATE [dbo].[location_combinations] \
-                SET Last_Checked = '{current_date}', Status = Status + {increase_status_value} \
+                SET Last_Checked = '{current_date}', Status = Status + {increase_status_value}, Blocked = null \
                 WHERE Origin = '{origin}' \
                 AND Destination = '{destination}'")
         else:
             self._serializer.update(f"UPDATE [dbo].[location_combinations] \
-                SET Last_Checked = '{current_date}' \
+                SET Last_Checked = '{current_date}', Status = 0, Blocked = null \
                 WHERE Origin = '{origin}' \
                 AND Destination = '{destination}'")
