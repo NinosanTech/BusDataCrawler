@@ -1,10 +1,9 @@
-from location_controller import Location_Controller
+from .location_controller import Location_Controller
 import pandas as pd
 from pandas import DataFrame as df
 
-def handle_output(output: list) -> df:
+def handle_output(output: list, location_controller: Location_Controller) -> df:
     results = df()
-    location_controller = Location_Controller()
     if type(output[1]) is not list:
         print(f"No output created due to error!")
     else:

@@ -1,18 +1,22 @@
 from Helper.geographics import get_cities
 from pandas import DataFrame as df
-from serializer import Serializer, ExistBehavior
+from .serializer import Serializer, ExistBehavior
 from datetime import date, timedelta, datetime
 import numpy as np
 
 class Location_Controller():
 
-    def __init__(self):
-        self._connect_serializer()
+    def __init__(self, serializer: Serializer=None):
         self._date_string = '%Y-%m-%d %H:%M:%S'
-    
-    def _connect_serializer(self):
-        self._serializer = Serializer()
-        self._serializer.connect_database()
+        self._serializer = serializer
+
+    def __enter__(self):
+        if self._serializer is None:
+            self._serializer = Serializer()
+        return self 
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._serializer.__exit__()
 
     def get_location_combinations(country: str = 'AR') -> list:
         cities = get_cities('AR')
@@ -29,7 +33,6 @@ class Location_Controller():
         oldest_date = date.min.strftime(self._date_string)
         combinations_dataframe.insert(3, 'Last_Checked', [oldest_date]*len(combinations_dataframe))
         table_name = 'location_combinations'
-        self._connect_serializer()
         self._serializer.write(combinations_dataframe, table_name, ExistBehavior.OVERWRITE)
 
     def get_usable_location_combinations(self) -> df:
