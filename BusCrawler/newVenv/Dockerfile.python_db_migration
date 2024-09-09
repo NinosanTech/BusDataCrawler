@@ -1,0 +1,32 @@
+#FROM mcr.microsoft.com/dotnet/framework/runtime:4.8-windowsservercore-ltsc2019
+FROM python:3.12
+
+WORKDIR ./src/
+
+#COPY deployment/ChromeSetup.exe .
+#RUN ["c:/deployment/ChromeSetup.exe", "FilePath", "./Chrome/", "/silent", "/install"]
+#RUN export PATH=$PATH:c:/deployment/Chrome/Application/chrome.exe
+#RUN setx /M PATH “%PATH%;%c:/deployment/Chrome/Application/chrome.exe%”
+
+# Systempakete und ODBC-Treiber installieren
+ENV ACCEPT_EULA=Y
+RUN apt-get update && \
+    apt-get install -y curl apt-transport-https gnupg && \
+    curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+    curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+    apt-get update && \
+    apt-get install -y msodbcsql18 unixodbc-dev
+
+#COPY ./install_odbc.sh ./scripts/
+#RUN chmod +x ./scripts/install_odbc.sh
+
+COPY ./requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ./src/BusPlatformCrawler/ ./src/BusPlatformCrawler/
+COPY ./src/DataCrawler/ ./src/DataCrawler
+COPY ./src ./src
+COPY ./src/Helper/ ./src/Helper/
+EXPOSE 5000
+
+CMD ["python", "-u", "./src/database_migration.py"]

@@ -1,0 +1,24 @@
+apiVersion: '2021-07-01'
+location: Germany West Central
+name: DB-Migration
+properties:
+  containers:
+  - name: db-migration
+    properties:
+      image: ninohamburg/newvenv-database_migration:latest
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 2
+      ports:
+      - port: 8080
+  osType: Linux
+  ipAddress:
+    type: Public
+    dnsNameLabel: db-migration
+    ports:
+    - port: 8080
+  diagnostics:
+    logAnalytics:
+      workspaceId: 761b95b6-9500-4332-ab26-fd8376b2d109
+      workspaceKey: ldHIGs/A9mmTjiXzLfrnPziRphKohzs9MMt5Cbn4YEP1mXyNBg9ZYhh48BNBWk3NQrJe2xT3qU+iB+EePkLWDA==
