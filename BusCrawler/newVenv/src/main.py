@@ -7,7 +7,7 @@ _pydevd_bundle.pydevd_constants.PYDEVD_WARN_EVALUATION_TIMEOUT = 20
 from DataCrawler.crawler_worker import Worker, Worker_Type
 from BusPlatformCrawler.website_crawler_abstract import Debug
 from DataCrawler.serializer import Serializer, DataBase
-from DataCrawler.location_controller import Location_Controller
+from DataCrawler.location_controller_do import LocationControllerDigitalOcean
 from DataCrawler.output_handler import handle_output
 
 
@@ -35,9 +35,10 @@ def worker_wrapper(worker: Worker, data: list) -> list:
 if __name__ == '__main__':
     import multiprocessing
 
+    db_type = DataBase.DIGITAL_OCEAN
     number_processes = 4
-    with Serializer(DataBase.AZURE) as serializer:
-        location_controller = Location_Controller(serializer)
+    with Serializer(db_type) as serializer:
+        location_controller = LocationControllerDigitalOcean(serializer)
         worker = Worker(Debug.AZURE_DEPLOY, Worker_Type.CRAWL)
         while True:
             cities_combinations = location_controller.get_next_location_combinations(number_processes*5, timedelta(hours=10))

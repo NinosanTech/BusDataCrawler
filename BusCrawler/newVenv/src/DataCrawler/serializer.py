@@ -48,10 +48,51 @@ class Serializer():
             return
 
         self._engine = create_engine(database_url)
+        self.connect_engine()
+
+    def connect_engine(self):
+        if self._conn != None:
+            self._conn.close()
         self._conn = self._engine.connect()
     
     def write(self, data: DataFrame, table_name: str, exist_behavior: ExistBehavior=ExistBehavior.APPEND, index_label:str = 'index'):
-        data.to_sql(table_name, con=self._conn, if_exists=exist_behavior.value, index=False, index_label=index_label)
+        if self._type == DataBase.DIGITAL_OCEAN:
+            table_exists = self._engine.dialect.has_table(self._conn, table_name)
+            if table_exists and exist_behavior == ExistBehavior.OVERWRITE:
+                print(f"Dropping existing Table {table_name}")
+                self._conn.execute(text(f"DROP TABLE {table_name}"))
+                self._conn.commit()
+            if not table_exists:
+                print(f"Creating new Table {table_name}")
+                query_string = f'CREATE TABLE "{table_name}" (id INT AUTO_INCREMENT PRIMARY KEY'
+                for column, dtype in data.dtypes.items():
+                    if dtype == 'object':
+                        query_string = query_string + f", {column} VARCHAR(255)"
+                    elif dtype == 'int64':
+                        query_string = query_string + f", {column} INT"
+                    elif dtype == 'float64':
+                        query_string = query_string + f", {column} FLOAT"
+                    elif dtype == 'datetime64[ns]':
+                        query_string = query_string + f", {column} DATETIME"
+                    else:
+                        query_string = query_string + f", {column} VARCHAR(255)"
+                        Warning(f'Data type {dtype} not known. Using VARCHAR.')
+                query_string = query_string + ")"
+                self._conn.execute(text(query_string))
+                print(f"Created Table {table_name}")
+            print(f"Writing data to Table {table_name}")
+            data.to_sql(
+                name=table_name,
+                con=self._conn,
+                if_exists=ExistBehavior.APPEND.value,
+                index=False,
+                chunksize=10,
+                method='multi'
+            )
+            print(f"Wrote data to Table {table_name}")
+            self._conn.commit()
+        else:
+            data.to_sql(table_name, con=self._conn, if_exists=exist_behavior.value, index=False, index_label=index_label)
 
     def read(self, query: str) -> DataFrame:
         return pd.read_sql(query, con=self._conn)
