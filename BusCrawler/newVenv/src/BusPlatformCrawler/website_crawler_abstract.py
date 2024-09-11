@@ -60,7 +60,7 @@ class Crawler(ABC):
         return driver
 
     def _fix_date(self, date: str) -> str:
-        return date.replace('Mar','Martes').replace('hs','')
+        return date.replace('Mar','Martes').replace('hs','').replace("\n", " ")
 
     def print_result(self):
         print(f"------------------\nOptions from {self.final_origin} to {self.final_destination} at {self.date}:\n", flush=True)

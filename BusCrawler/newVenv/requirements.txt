@@ -8,3 +8,4 @@ geonamescache
 sqlalchemy
 pyodbc
 pydevd
+mysql-connector-python

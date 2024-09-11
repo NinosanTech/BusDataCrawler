@@ -29,4 +29,4 @@ COPY ./src ./src
 COPY ./src/Helper/ ./src/Helper/
 EXPOSE 5000
 
-CMD ["python", "-u", "./src/main.py"]
+CMD ["python", "-u", "./src/database_migration.py"]

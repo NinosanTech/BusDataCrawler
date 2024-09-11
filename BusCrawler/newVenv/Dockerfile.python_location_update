@@ -23,9 +23,10 @@ RUN apt-get update && \
 COPY ./requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./BusPlatformCrawler/ ./src/BusPlatformCrawler/
-COPY ./DataCrawler/ ./src
-COPY ./Helper/ ./src/Helper/
+COPY ./src/BusPlatformCrawler/ ./src/BusPlatformCrawler/
+COPY ./src/DataCrawler/ ./src
+COPY ./src ./src
+COPY ./src/Helper/ ./src/Helper/
 EXPOSE 5000
 
 CMD ["python", "-u", "./src/initialize_locations.py"]

@@ -1,10 +1,9 @@
-from location_controller import Location_Controller
+from .location_controller_abstract import LocationControllerAbstract
 import pandas as pd
 from pandas import DataFrame as df
 
-def handle_output(output: list) -> df:
+def handle_output(output: list, location_controller: LocationControllerAbstract) -> df:
     results = df()
-    location_controller = Location_Controller()
     if type(output[1]) is not list:
         print(f"No output created due to error!")
     else:
@@ -31,16 +30,16 @@ def handle_output(output: list) -> df:
                 cities_output[0], cities_output[1], cities_output[2], False)
     return results
 
-def handle_location_output(output: list):
-    cities_output = output[1][0:3]
-    location_controller = Location_Controller()
-    if output[0] != 1:
-        if output[0] == -2:
-            location_controller.origin_not_available(\
-                cities_output[0], cities_output[1], cities_output[2], True, 5)
-        elif output[0] == -3:
-            location_controller.destination_not_available(\
-                cities_output[0], cities_output[1], cities_output[2], True, 5)
-    else:
-        location_controller.update_location_status(\
-            cities_output[0], cities_output[1], cities_output[2], False)
+# def handle_location_output(output: list):
+#     cities_output = output[1][0:3]
+#     location_controller = Location_Controller()
+#     if output[0] != 1:
+#         if output[0] == -2:
+#             location_controller.origin_not_available(\
+#                 cities_output[0], cities_output[1], cities_output[2], True, 5)
+#         elif output[0] == -3:
+#             location_controller.destination_not_available(\
+#                 cities_output[0], cities_output[1], cities_output[2], True, 5)
+#     else:
+#         location_controller.update_location_status(\
+#             cities_output[0], cities_output[1], cities_output[2], False)
