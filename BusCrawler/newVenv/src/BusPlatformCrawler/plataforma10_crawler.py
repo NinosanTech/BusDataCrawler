@@ -175,7 +175,7 @@ class plataforma10_crawler(Crawler):
 
             actions = ActionChains(self._d)
             results = self._build_result_dict()
-            for i_day_advance in range(0,4):
+            for i_day_advance in range(0,10):
                 for i in self._d.find_elements(By.CLASS_NAME, "searchResultCard_card__5Avpr"):
                     
                     status = self._scroll_to_element(actions, i)
@@ -184,7 +184,7 @@ class plataforma10_crawler(Crawler):
                     try:
                         results = self._extract_information(i, results)
                     except Exception as e:
-                        print(f"{self._main_logging_string}Information extraction failed!", flush=True)
+                        print(f"{self._main_logging_string}Information extraction failed: {e}", flush=True)
                         return 1
                 status = self._select_next_day()
                 if status != 1:
