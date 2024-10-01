@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buslinien Karte</title>
+    <!-- {% load static %} -->
+    <link rel="stylesheet" href="{% static 'geoview/style.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Interaktive Buslinien Karte</h1>
+
+    <ul id="line-list"></ul> <!-- Leere Liste für die Buslinien -->
+
+    <script>
+        $(document).ready(function() {
+            // GeoJSON-Daten aus Django übergeben
+            var lines = JSON.parse('{{ lines|escapejs }}');  // Umwandlung in ein JavaScript-Objekt
+            
+            // Debug: Ausgabe der GeoJSON-Daten in der Konsole
+            console.log(lines); // Diese Zeile gibt die Daten in der Konsole aus
+            
+            // Überprüfen, ob Features vorhanden sind
+            if (lines.features && lines.features.length > 0) {
+                // Durchlaufen der GeoJSON-Features und Hinzufügen zur Liste
+                lines.features.forEach(function(feature) {
+                    var lineName = feature.properties.line; // Name der Linie
+                    var auslastungMontag = feature.properties.auslastung_montag; // Auslastung am Montag
+
+                    // Erstellen eines Listenelements
+                    $('#line-list').append('<li>' + lineName + ': ' + auslastungMontag + '</li>');
+                });
+            } else {
+                $('#line-list').append('<li>Keine Linien verfügbar.</li>');
+            }
+        });
+    </script>
+
+    <label for="day">Tag auswählen:</label>
+    <select id="day" onchange="updateMap()">
+        <option value="montag">Montag</option>
+        <option value="dienstag">Dienstag</option>
+        <option value="mittwoch">Mittwoch</option>
+    </select>
+
+    <div id="map"></div>
+
+    {% load static %}
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="{% static 'geoview/script.js' %}"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+</body>
+</html>

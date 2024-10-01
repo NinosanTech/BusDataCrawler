@@ -1,0 +1,6 @@
+docker pull osrm/osrm-backend
+
+docker run -t -v c:\Users\ninos\OneDrive\BusDataCrawler\BusCrawler\newVenv\src\Visualization\OSRM:/data osrm/osrm-backend osrm-extract -p /opt/car.lua /data/argentina-latest.osm.pbf
+docker run -t -v c:\Users\ninos\OneDrive\BusDataCrawler\BusCrawler\newVenv\src\Visualization\OSRM:/data osrm/osrm-backend osrm-partition /data/argentina-latest.osrm
+docker run -t -v c:\Users\ninos\OneDrive\BusDataCrawler\BusCrawler\newVenv\src\Visualization\OSRM:/data osrm/osrm-backend osrm-customize /data/argentina-latest.osrm
+docker run -t -i -p 5000:5000 -v c:\Users\ninos\OneDrive\BusDataCrawler\BusCrawler\newVenv\src\Visualization\OSRM:/data osrm/osrm-backend osrm-routed --algorithm mld /data/argentina-latest.osrm
