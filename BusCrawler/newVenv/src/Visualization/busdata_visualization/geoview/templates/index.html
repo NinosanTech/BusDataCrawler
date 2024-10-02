@@ -26,8 +26,8 @@
             if (lines.features && lines.features.length > 0) {
                 // Durchlaufen der GeoJSON-Features und Hinzufügen zur Liste
                 lines.features.forEach(function(feature) {
-                    var lineName = feature.properties.line; // Name der Linie
-                    var auslastungMontag = feature.properties.auslastung_montag; // Auslastung am Montag
+                    var lineName = feature.properties.company; // Name der Linie
+                    var auslastungMontag = feature.properties.occupancy; // Auslastung am Montag
 
                     // Erstellen eines Listenelements
                     $('#line-list').append('<li>' + lineName + ': ' + auslastungMontag + '</li>');

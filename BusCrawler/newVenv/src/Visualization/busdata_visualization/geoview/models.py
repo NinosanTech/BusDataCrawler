@@ -1,11 +1,16 @@
 from django.contrib.gis.db import models
 
-# Create your models here.
-class Line(models.Model):
-  line = models.CharField(max_length=255)
-  auslastung_montag = models.CharField(max_length=255)
-#   auslastung_montag = models.JSONField
-  geometry = models.GeometryField()
+class Occupancy(models.Model):
+  occupancy = models.FloatField(max_length=255)
+  date = models.DateField()
+
+  class Meta:
+    db_table = 'occupancy'
+
+class BusData(models.Model):
+  company = models.CharField(max_length=255)
+  occupancy = models.ForeignKey(Occupancy, on_delete=models.CASCADE)
+  route = models.GeometryField()
   
   class Meta:
-        db_table = 'bus_lines'
+        db_table = 'bus_connections'

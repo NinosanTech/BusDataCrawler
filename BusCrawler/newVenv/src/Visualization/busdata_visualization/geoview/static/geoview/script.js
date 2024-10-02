@@ -30,31 +30,34 @@ function loadBusData() {
         }
     })
     .then(data => {
+        console.log(data)
         if (typeof data === "string") {
             data = JSON.parse(data);
         }
-        const features = data.features
+        const features = data
         if (!features || features.length === 0) {
             throw new Error("Kein 'features'-Array in den empfangenen Daten.");
         }
-        busLinesLayer = L.geoJSON({type: 'FeatureCollection', features: features}, {
+        busLinesLayer = L.geoJSON(features, {
             style: function (feature) {
-                var auslastung = feature.properties.auslastung_montag;
+                var occupancy = feature.occupancy;
                 return {
-                    color: auslastung > 50 ? 'red' : 'blue',
+                    color: occupancy > 50 ? 'red' : 'blue',
                     weight: 5
                 };
             },
             onEachFeature: function (feature, layer) {
                 layer.bindTooltip(
-                    `${feature.properties.line}: ${feature.properties.auslastung_montag}% Auslastung`
+                    `${feature.name}: ${feature.occupancy}% Auslastung`
                 );
             }
         }).addTo(map);
 
         features.forEach(feature => {
-            if (feature.geometry && feature.geometry.coordinates.length > 1) {
-                const waypoints = feature.geometry.coordinates.map(coord => L.latLng(coord[0], coord[1]));
+            const route = JSON.parse(feature.route)
+            console.log(route)
+            if (route && route.coordinates.length > 1) {
+                const waypoints = route.coordinates.map(coord => L.latLng(coord[0], coord[1]));
                 addRouting(waypoints);
             }
         });
